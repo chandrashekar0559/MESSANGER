@@ -72,8 +72,8 @@ socket.on('chat message', function(msg){
     
   });
    socket.on("sender", function (data , req , res) {
-        socket.emit("sender", data);
-        socket.broadcast.emit("sender", data);
+        socket.emit("sender", socket.user);
+        socket.broadcast.emit("sender", socket.user);
      var SESSIONUSER =   app.use(function(req,res){
         console.log("============"+req.session.user)
         return req.session.user
