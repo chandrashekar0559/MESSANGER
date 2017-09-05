@@ -15,8 +15,10 @@ app.use(bodyParser.json({limit:'10mb', extended:true}));
 app.use(bodyParser.urlencoded({limit:'10mb',extended:true}));
 app.use(cookieParser());
 
+sockets = [];
+people  = {};
 //session for Login/SignUp
-app.use(session({
+var sessionMiddleware = session({
 	name:'cokkieMessanger',
 	secret: 'messanger oath',
 	resave:true ,
@@ -24,7 +26,9 @@ app.use(session({
     proxy: true,
 	saveUnintialized:true,
 	cookie:{secure:false}
-}))
+});
+
+app.use(sessionMiddleware);
 
 //mongo db connection URI
 var dbPath= "mongodb://localhost/messangerDB";
@@ -58,33 +62,58 @@ app.get('/',function(req,res){
 
 io.on('connection' , function(socket){
 
+//who joins to the server
 socket.on('user', function(data){
 	console.log(data+"came to online");
-socket.broadcast.emit('chat message' , data+"joined");
+	var msg = "joined";
+socket.broadcast.emit('chat message' , data +" " +msg);
 socket.user = data;
 });
 
 socket.on('chat message', function(msg){
  if(msg != ''){
- io.emit('chat message', msg);
+ io.emit('chat message', socket.user , msg);
     console.log('message: ' +socket.user+' : '+ msg);
  }
     
   });
    socket.on("sender", function (data , req , res) {
-        socket.emit("sender", socket.user);
-        socket.broadcast.emit("sender", socket.user);
-     var SESSIONUSER =   app.use(function(req,res){
-        console.log("============"+req.session.user)
-        return req.session.user
+        socket.emit("sender",  socket.user);
+        socket.broadcast.emit("sender",  socket.user);
         });
-    });
 
 socket.on('disconnect', function(msg){
 socket.broadcast.emit('chat message' , "some user left")
   });
 
 });
+
+app.post('/messages', function(req, res, next) {
+    var message = req.body.message;
+    var author = req.body.author;
+    var messageModel = new Message();
+    messageModel.author = author;
+    messageModel.message = message;
+    messageModel.save(function (err, result) {
+       if (!err) {
+           Message.find({}).sort('-createDate').limit(5).exec(function(err, messages) {
+               io.emit("message", messages);
+           });
+           res.send("Message Sent!");
+       } else {
+           res.send("Technical error occurred!");
+       }
+    });
+});
+ 
+app.get('/messages', function(req, res, next) {
+    Message.find({}).sort('-createDate').limit(5).exec(function(err, messages) {
+        res.json(messages);
+    });
+});
+
+
+
 
 //fs module is a default module for file mangement system
 var fs = require('fs');
