@@ -198,20 +198,22 @@
   <script type="text/javascript">
   $(function () {
     var socket = io('http://localhost:5050/');
-    var user = prompt("Please enter Your Name");
+    var url=window.location.href;
+
+    var user = url.split("chat/")[1];
 
     if(user != null){
         socket.emit ('user' , user);
     }
 
     $('form').submit(function(){
-      socket.emit('chat message', $('#m').val());
+      socket.emit('chat message', $ ('#m').val());
       $('#m').val('');
       return false;
     });
 
     socket.on('chat message', function(user , msg){
-        console.log("messages:--"+user+':'+msg)
+        console.log("messages:--"+ user  +':'+msg )
       $('#messages').append($('<li>').text(user+' : '+msg));
       window.scrollTo(0, document.body.scrollHeight);
     });
@@ -229,7 +231,7 @@
             });
   });
 
-  </script>
+  </script> 
 
                     </div>
                 </div>
