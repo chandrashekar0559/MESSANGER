@@ -35,6 +35,13 @@ html(lang='en')
       color: white;
       padding: 15px;
       }
+    script.
+      $(document).ready(function(){
+      var user = $("#user").text();
+      $("#getLink").click(function(){
+      document.getElementById("getLink").href = "http://localhost:5050/users/chat/"+user;
+      });
+      });
   body
     nav.navbar.navbar-inverse
       .container-fluid
@@ -44,16 +51,18 @@ html(lang='en')
             span.icon-bar
             span.icon-bar
         #myNavbar.collapse.navbar-collapse
+         
+
           ul.nav.navbar-nav
             li
-              a(href='http://localhost:5050/users/chat') Chat
+              a#getLink(href='') Chat
     .container
       .row
 
 
         .col-md-4.col-md-offset-4
-           h4 Hi #{user.userName}
            h5 Your email is #{user.email}
+           h4#user #{user.userName}
            h5
               a(href='http://localhost:5050/users/logout') logout
 
